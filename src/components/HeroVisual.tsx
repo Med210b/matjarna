@@ -8,13 +8,38 @@ import {
 } from 'react';
 
 import HeroSceneFallback from './three/HeroSceneFallback';
+
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
-const HeroScene = lazy(() => import('./three/HeroScene'));
+const HeroScene = lazy(
+  () => import('./three/HeroScene')
+);
+
+interface VisualProps {
+  onReady: () => void;
+  forceFallback?: boolean;
+}
+
+function ReadyFallback({
+  onReady,
+}: {
+  onReady: () => void;
+}) {
+  useEffect(() => {
+    onReady();
+  }, [onReady]);
+
+  return <HeroSceneFallback />;
+}
 
 class SceneBoundary extends Component<
-  { children: ReactNode },
-  { failed: boolean }
+  {
+    children: ReactNode;
+    onReady: () => void;
+  },
+  {
+    failed: boolean;
+  }
 > {
   state = {
     failed: false,
@@ -28,19 +53,34 @@ class SceneBoundary extends Component<
 
   render() {
     if (this.state.failed) {
-      return <HeroSceneFallback />;
+      return (
+        <ReadyFallback
+          onReady={this.props.onReady}
+        />
+      );
     }
 
     return this.props.children;
   }
 }
 
-export default function HeroVisual() {
+export default function HeroVisual({
+  onReady,
+  forceFallback = false,
+}: VisualProps) {
   const reduced = useReducedMotion();
-  const [desktop, setDesktop] = useState(false);
+
+  const [desktop, setDesktop] = useState(
+    () =>
+      window.matchMedia(
+        '(min-width: 768px)'
+      ).matches
+  );
 
   useEffect(() => {
-    const media = window.matchMedia('(min-width: 768px)');
+    const media = window.matchMedia(
+      '(min-width: 768px)'
+    );
 
     const update = () => {
       setDesktop(media.matches);
@@ -51,18 +91,29 @@ export default function HeroVisual() {
     media.addEventListener('change', update);
 
     return () => {
-      media.removeEventListener('change', update);
+      media.removeEventListener(
+        'change',
+        update
+      );
     };
   }, []);
 
-  if (!desktop || reduced) {
-    return <HeroSceneFallback />;
+  if (
+    !desktop ||
+    reduced ||
+    forceFallback
+  ) {
+    return (
+      <ReadyFallback onReady={onReady} />
+    );
   }
 
   return (
-    <SceneBoundary>
-      <Suspense fallback={<HeroSceneFallback />}>
-        <HeroScene />
+    <SceneBoundary onReady={onReady}>
+      <Suspense
+        fallback={<HeroSceneFallback />}
+      >
+        <HeroScene onReady={onReady} />
       </Suspense>
     </SceneBoundary>
   );

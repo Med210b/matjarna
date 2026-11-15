@@ -16,11 +16,13 @@ import Preloader from '@/components/Preloder';
 
 import SmoothScrollProvider from '@/components/animations/SmoothScrollProvider';
 import ScrollProgress from '@/components/animations/ScrollProgress';
+import PageTransitions from '@/components/animations/PageTransitions';
 
 import { ScrollTrigger } from '@/lib/gsapSetup';
 
 import '@/styles/cinematic.css';
 import '@/styles/intro-refinement.css';
+import '@/styles/journey.css';
 
 export default function App() {
   const [bypass] = useState(() =>
@@ -30,14 +32,26 @@ export default function App() {
     )
   );
 
-  const [loading, setLoading] = useState(!bypass);
-  const [introStarted, setIntroStarted] = useState(bypass);
-  const [fontsReady, setFontsReady] = useState(false);
-  const [visualReady, setVisualReady] = useState(false);
-  const [fallback, setFallback] = useState(false);
+  const [loading, setLoading] =
+    useState(!bypass);
 
-  const content = useRef<HTMLDivElement>(null);
-  const main = useRef<HTMLElement>(null);
+  const [introStarted, setIntroStarted] =
+    useState(bypass);
+
+  const [fontsReady, setFontsReady] =
+    useState(false);
+
+  const [visualReady, setVisualReady] =
+    useState(false);
+
+  const [fallback, setFallback] =
+    useState(false);
+
+  const content =
+    useRef<HTMLDivElement>(null);
+
+  const main =
+    useRef<HTMLElement>(null);
 
   const markVisualReady = useCallback(() => {
     setVisualReady(true);
@@ -143,13 +157,40 @@ export default function App() {
             onVisualReady={markVisualReady}
           />
 
-          <BrandIntro />
-          <Services />
+          <div
+            className="journey-about"
+            data-journey-about
+          >
+            <BrandIntro />
+          </div>
+
+          <div
+            className="journey-services"
+            data-journey-services
+          >
+            <Services />
+          </div>
+
           <FutureExperiences />
-          <FinalCTA />
+
+          <div
+            className="journey-contact"
+            data-journey-contact
+          >
+            <FinalCTA />
+          </div>
         </main>
 
-        <Footer />
+        <div
+          className="journey-footer"
+          data-journey-footer
+        >
+          <Footer />
+        </div>
+
+        <PageTransitions
+          enabled={!loading}
+        />
       </div>
 
       {loading && (

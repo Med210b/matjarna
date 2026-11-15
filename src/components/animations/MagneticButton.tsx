@@ -1,21 +1,14 @@
-import { useRef, useEffect, ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 interface MagneticButtonProps {
   children: ReactNode;
   className?: string;
   onClick?: () => void;
-  /** Magnetic strength — 0 to 1 */
   strength?: number;
   href?: string;
 }
 
-/**
- * MagneticButton — adds gentle magnetic pointer-following behavior
- * on desktop pointer devices. Uses direct DOM manipulation (no
- * React state) to avoid re-renders. Falls back to normal button
- * on touch devices and reduced-motion.
- */
 export default function MagneticButton({
   children,
   className = '',
@@ -27,44 +20,58 @@ export default function MagneticButton({
   const reduced = useReducedMotion();
 
   useEffect(() => {
-    const el = ref.current;
-    if (!el || reduced) return;
+    const element = ref.current;
 
-    // Skip on touch devices
+    if (!element || reduced) return;
+
     if (window.matchMedia('(hover: none)').matches) return;
 
-    const handleMove = (e: MouseEvent) => {
-      const rect = el.getBoundingClientRect();
-      const x = e.clientX - rect.left - rect.width / 2;
-      const y = e.clientY - rect.top - rect.height / 2;
-      el.style.transform = `translate(${x * strength}px, ${y * strength}px)`;
+    const handleMove = (event: MouseEvent) => {
+      const rect = element.getBoundingClientRect();
+
+      const x = event.clientX - rect.left - rect.width / 2;
+      const y = event.clientY - rect.top - rect.height / 2;
+
+      element.style.transform =
+        `translate(${x * strength}px, ${y * strength}px)`;
     };
 
     const handleLeave = () => {
-      el.style.transform = '';
+      element.style.transform = '';
     };
 
-    el.addEventListener('mousemove', handleMove);
-    el.addEventListener('mouseleave', handleLeave);
+    element.addEventListener('mousemove', handleMove);
+    element.addEventListener('mouseleave', handleLeave);
 
     return () => {
-      el.removeEventListener('mousemove', handleMove);
-      el.removeEventListener('mouseleave', handleLeave);
+      element.removeEventListener('mousemove', handleMove);
+      element.removeEventListener('mouseleave', handleLeave);
+      element.style.transform = '';
     };
   }, [reduced, strength]);
 
-  const classNameStr = `${className} transition-transform duration-300 ease-out will-change-transform`;
+  const classes =
+    `${className} transition-transform duration-300 ease-out will-change-transform`;
 
   if (href) {
     return (
-      <a ref={ref as unknown as React.Ref<HTMLAnchorElement>} href={href} className={classNameStr} onClick={onClick}>
+      <a
+        ref={ref as unknown as React.Ref<HTMLAnchorElement>}
+        href={href}
+        className={classes}
+        onClick={onClick}
+      >
         {children}
       </a>
     );
   }
 
   return (
-    <button ref={ref as unknown as React.Ref<HTMLButtonElement>} className={classNameStr} onClick={onClick}>
+    <button
+      ref={ref as unknown as React.Ref<HTMLButtonElement>}
+      className={classes}
+      onClick={onClick}
+    >
       {children}
     </button>
   );

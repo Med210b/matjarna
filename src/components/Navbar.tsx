@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Menu, X, ArrowUpRight } from 'lucide-react';
-import { NAV_LINKS, LOGO_URL } from '@/lib/content';
-import { lenisRef } from '@/lib/gsapSetup';
+import { useEffect, useState } from 'react';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
+
+import { LOGO_URL, NAV_LINKS } from '@/lib/content';
+import { scrollToSection } from '@/lib/navigation';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,17 +10,23 @@ export default function Navbar() {
   const [activeSection, setActiveSection] = useState('home');
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 40);
+    };
+
     handleScroll();
+
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
-  // Active section tracking via IntersectionObserver
   useEffect(() => {
-    const sections = NAV_LINKS.map((link) => document.querySelector(link.href)).filter(
-      Boolean
-    ) as Element[];
+    const sections = NAV_LINKS.map((link) =>
+      document.querySelector(link.href)
+    ).filter(Boolean) as Element[];
 
     if (sections.length === 0) return;
 
@@ -31,15 +38,22 @@ export default function Navbar() {
           }
         });
       },
-      { rootMargin: '-40% 0px -50% 0px', threshold: 0 }
+      {
+        rootMargin: '-40% 0px -50% 0px',
+        threshold: 0,
+      }
     );
 
-    sections.forEach((section) => observer.observe(section));
+    sections.forEach((section) => {
+      observer.observe(section);
+    });
+
     return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
     document.body.style.overflow = isOpen ? 'hidden' : '';
+
     return () => {
       document.body.style.overflow = '';
     };
@@ -47,14 +61,7 @@ export default function Navbar() {
 
   const handleNavClick = (href: string) => {
     setIsOpen(false);
-    const el = document.querySelector(href);
-    if (el) {
-      if (lenisRef.current) {
-        lenisRef.current.scrollTo(el as HTMLElement, { offset: 0 });
-      } else {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
+    scrollToSection(href);
   };
 
   return (
@@ -67,14 +74,15 @@ export default function Navbar() {
         <div className="mx-auto max-w-7xl px-5 sm:px-8">
           <div
             className={`flex items-center justify-between rounded-2xl px-5 py-3 transition-all duration-500 ${
-              scrolled ? 'glass-nav shadow-cinematic' : 'bg-transparent'
+              scrolled
+                ? 'glass-nav shadow-cinematic'
+                : 'bg-transparent'
             }`}
           >
-            {/* Logo */}
             <a
               href="#home"
-              onClick={(e) => {
-                e.preventDefault();
+              onClick={(event) => {
+                event.preventDefault();
                 handleNavClick('#home');
               }}
               className="flex items-center gap-3 group"
@@ -84,34 +92,39 @@ export default function Navbar() {
                 alt="Matjrnaa Logo"
                 className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
               />
+
               <div className="flex flex-col leading-none">
                 <span className="font-display text-lg font-semibold tracking-tight text-espresso">
                   Matjrnaa
                 </span>
+
                 <span className="font-arabic text-[11px] text-burgundy/70 mt-0.5">
                   متجرنا
                 </span>
               </div>
             </a>
 
-            {/* Desktop Nav with active indicator */}
             <div className="hidden lg:flex items-center gap-1">
               {NAV_LINKS.map((link) => {
                 const sectionId = link.href.replace('#', '');
                 const isActive = activeSection === sectionId;
+
                 return (
                   <a
                     key={link.href}
                     href={link.href}
-                    onClick={(e) => {
-                      e.preventDefault();
+                    onClick={(event) => {
+                      event.preventDefault();
                       handleNavClick(link.href);
                     }}
                     className={`relative px-4 py-2 text-sm font-medium transition-colors duration-300 group ${
-                      isActive ? 'text-burgundy' : 'text-espresso/70 hover:text-burgundy'
+                      isActive
+                        ? 'text-burgundy'
+                        : 'text-espresso/70 hover:text-burgundy'
                     }`}
                   >
                     {link.label}
+
                     <span
                       className={`absolute bottom-1 left-1/2 h-px bg-gradient-to-r from-burgundy to-coral transition-all duration-300 ${
                         isActive
@@ -124,12 +137,11 @@ export default function Navbar() {
               })}
             </div>
 
-            {/* CTA + Mobile Toggle */}
             <div className="flex items-center gap-3">
               <a
                 href="#contact"
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={(event) => {
+                  event.preventDefault();
                   handleNavClick('#contact');
                 }}
                 className="hidden sm:inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-burgundy to-cherry px-5 py-2.5 text-sm font-medium text-ivory shadow-glow-burgundy transition-all duration-300 hover:shadow-lg hover:scale-105 hover:from-cherry hover:to-burgundy focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-burgundy"
@@ -142,42 +154,53 @@ export default function Navbar() {
                 onClick={() => setIsOpen(!isOpen)}
                 className="lg:hidden flex items-center justify-center h-10 w-10 rounded-xl bg-espresso/5 text-espresso transition-colors hover:bg-burgundy hover:text-ivory"
                 aria-label="Toggle menu"
+                aria-expanded={isOpen}
+                aria-controls="mobile-navigation"
               >
-                {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                {isOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
               </button>
             </div>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu */}
       <div
+        id="mobile-navigation"
         className={`fixed inset-0 z-40 lg:hidden transition-all duration-500 ${
-          isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+          isOpen
+            ? 'opacity-100 visible'
+            : 'opacity-0 invisible'
         }`}
       >
         <div
           className="absolute inset-0 bg-espresso/40 backdrop-blur-sm"
           onClick={() => setIsOpen(false)}
         />
+
         <div
           className={`absolute right-0 top-0 h-full w-[80%] max-w-sm bg-ivory shadow-2xl transition-transform duration-500 ${
             isOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
           <div className="flex flex-col p-8 pt-24">
-            {NAV_LINKS.map((link, i) => (
+            {NAV_LINKS.map((link, index) => (
               <a
                 key={link.href}
                 href={link.href}
-                onClick={(e) => {
-                  e.preventDefault();
+                onClick={(event) => {
+                  event.preventDefault();
                   handleNavClick(link.href);
                 }}
                 className="group flex items-center justify-between py-4 border-b border-burgundy/10"
                 style={{
                   animation: isOpen
-                    ? `fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) ${0.1 + i * 0.08}s forwards`
+                    ? `fadeUp 0.5s cubic-bezier(0.16,1,0.3,1) ${
+                        0.1 + index * 0.08
+                      }s forwards`
                     : 'none',
                   opacity: isOpen ? undefined : 0,
                 }}
@@ -185,13 +208,15 @@ export default function Navbar() {
                 <span className="font-display text-2xl font-medium text-espresso group-hover:text-burgundy transition-colors">
                   {link.label}
                 </span>
+
                 <ArrowUpRight className="h-5 w-5 text-burgundy/40 group-hover:text-burgundy group-hover:translate-x-1 transition-all" />
               </a>
             ))}
+
             <a
               href="#contact"
-              onClick={(e) => {
-                e.preventDefault();
+              onClick={(event) => {
+                event.preventDefault();
                 handleNavClick('#contact');
               }}
               className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-burgundy to-cherry px-6 py-3.5 text-base font-medium text-ivory shadow-glow-burgundy"
@@ -199,9 +224,15 @@ export default function Navbar() {
               Let's Talk
               <ArrowUpRight className="h-5 w-5" />
             </a>
+
             <div className="mt-auto pt-8">
-              <span className="font-arabic text-sm text-burgundy/60">متجرنا</span>
-              <p className="text-sm text-espresso/50 mt-1">Dubai, UAE</p>
+              <span className="font-arabic text-sm text-burgundy/60">
+                متجرنا
+              </span>
+
+              <p className="text-sm text-espresso/50 mt-1">
+                Dubai, UAE
+              </p>
             </div>
           </div>
         </div>

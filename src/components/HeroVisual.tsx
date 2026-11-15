@@ -1,33 +1,69 @@
-import { lazy, Suspense, useState, useEffect } from 'react';
-import HeroSceneFallback from './three/HeroSceneFallback';
+import {
+  Component,
+  lazy,
+  Suspense,
+  useEffect,
+  useState,
+  type ReactNode,
+} from 'react';
 
-/**
- * HeroVisual — integration point for the 3D hero scene.
- *
- * Lazily loads the R3F Canvas to keep initial bundle lean.
- * Falls back to the static CSS composition during load or
- * if WebGL is unavailable.
- *
- * The surrounding layout in Hero.tsx is designed so this
- * component can be swapped without structural changes.
- */
+import HeroSceneFallback from './three/HeroSceneFallback';
+import { useReducedMotion } from '@/hooks/useReducedMotion';
 
 const HeroScene = lazy(() => import('./three/HeroScene'));
 
+class SceneBoundary extends Component<
+  { children: ReactNode },
+  { failed: boolean }
+> {
+  state = {
+    failed: false,
+  };
+
+  static getDerivedStateFromError() {
+    return {
+      failed: true,
+    };
+  }
+
+  render() {
+    if (this.state.failed) {
+      return <HeroSceneFallback />;
+    }
+
+    return this.props.children;
+  }
+}
+
 export default function HeroVisual() {
-  const [mounted, setMounted] = useState(false);
+  const reduced = useReducedMotion();
+  const [desktop, setDesktop] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const media = window.matchMedia('(min-width: 768px)');
+
+    const update = () => {
+      setDesktop(media.matches);
+    };
+
+    update();
+
+    media.addEventListener('change', update);
+
+    return () => {
+      media.removeEventListener('change', update);
+    };
   }, []);
 
-  if (!mounted) {
+  if (!desktop || reduced) {
     return <HeroSceneFallback />;
   }
 
   return (
-    <Suspense fallback={<HeroSceneFallback />}>
-      <HeroScene />
-    </Suspense>
+    <SceneBoundary>
+      <Suspense fallback={<HeroSceneFallback />}>
+        <HeroScene />
+      </Suspense>
+    </SceneBoundary>
   );
 }

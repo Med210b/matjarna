@@ -1,153 +1,127 @@
-import { useEffect, useRef } from 'react';
-import { gsap, ScrollTrigger } from '@/lib/gsapSetup';
-import { scrollStore } from '@/lib/gsapSetup';
-import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useLayoutEffect } from 'react';
+import {
+  gsap,
+  ScrollTrigger,
+  scrollStore,
+} from '@/lib/gsapSetup';
 
-/**
- * ScrollStorytelling — sets up a ScrollTrigger that tracks the hero
- * section's scroll progress and writes it to scrollStore.heroProgress.
- * This value is read by the R3F useFrame loop to drive 3D transforms.
- *
- * Also handles the hero text choreography:
- *   Phase A: typography moves upward, background layers respond
- *   Phase B: headline fades/masks out
- *   Phase C: final transition
- *
- * Uses gsap.matchMedia for responsive behavior:
- *   Desktop: full scrubbed choreography
- *   Tablet: reduced intensity
- *   Mobile: simplified non-scrubbed fade
- */
 export default function ScrollStorytelling() {
-  const reduced = useReducedMotion();
-  const heroRef = useRef<HTMLElement>(null);
-
-  useEffect(() => {
+  useLayoutEffect(() => {
     const hero = document.getElementById('home');
+
     if (!hero) return;
 
-    const mm = gsap.matchMedia();
+    const media = gsap.matchMedia();
 
-    // --- Desktop & Tablet: scrubbed choreography ---
-    mm.add(
+    media.add(
       {
-        isDesktop: '(min-width: 1024px)',
-        isTablet: '(min-width: 768px) and (max-width: 1023px)',
-        isMobile: '(max-width: 767px)',
-        reduce: reduced,
+        all: '(min-width: 0px)',
+        desktop: '(min-width: 1024px)',
+        reduce: '(prefers-reduced-motion: reduce)',
       },
       (context) => {
-        const { isDesktop, isTablet, isMobile, reduce } = context.conditions as {
-          isDesktop: boolean;
-          isTablet: boolean;
-          isMobile: boolean;
-          reduce: boolean;
-        };
+        const { desktop, reduce } = context.conditions!;
 
-        // 1. Write scroll progress to shared store for R3F
-        const progressTrigger = ScrollTrigger.create({
+        scrollStore.heroProgress = 0;
+
+        if (reduce) return;
+
+        gsap.from(
+          hero.querySelectorAll('[data-hero-line]'),
+          {
+            yPercent: 110,
+            rotation: 3,
+            opacity: 0,
+            stagger: 0.13,
+            duration: 1.15,
+            ease: 'power4.out',
+            clearProps: 'all',
+          }
+        );
+
+        gsap.from(
+          hero.querySelectorAll('[data-hero-enter]'),
+          {
+            y: 22,
+            opacity: 0,
+            stagger: 0.1,
+            delay: 0.25,
+            duration: 0.9,
+            ease: 'power3.out',
+            clearProps: 'all',
+          }
+        );
+
+        const progress = ScrollTrigger.create({
           trigger: hero,
           start: 'top top',
-          end: isMobile ? 'bottom top' : '+=120%',
-          scrub: 1,
+          end: 'bottom top',
           onUpdate: (self) => {
+            scrollStore.heroProgress = self.progress;
+          },
+          onRefresh: (self) => {
             scrollStore.heroProgress = self.progress;
           },
         });
 
-        if (reduce) return;
+        scrollStore.heroProgress = progress.progress;
 
-        // 2. Hero text choreography
-        const heroContent = hero.querySelector('[data-hero-content]');
-        const heroEyebrow = hero.querySelector('[data-hero-eyebrow]');
-        const heroHeadline = hero.querySelector('[data-hero-headline]');
-        const heroSupport = hero.querySelector('[data-hero-support]');
-        const heroCtas = hero.querySelector('[data-hero-ctas]');
-        const heroStats = hero.querySelector('[data-hero-stats]');
-        const scrollIndicator = hero.querySelector('[data-hero-scroll-indicator]');
-        const bgOrbs = hero.querySelectorAll('[data-hero-bg]');
+        if (desktop) {
+          gsap.to(
+            hero.querySelector('[data-hero-content]'),
+            {
+              y: -55,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: hero,
+                start: 'top top',
+                end: 'bottom top',
+                scrub: 0.7,
+              },
+            }
+          );
 
-        const textIntensity = isMobile ? 0.5 : isTablet ? 0.7 : 1;
+          gsap.to(
+            hero.querySelector('[data-hero-visual]'),
+            {
+              y: -85,
+              scale: 0.9,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: hero,
+                start: 'top top',
+                end: 'bottom top',
+                scrub: 0.9,
+              },
+            }
+          );
 
-        if (heroContent) {
-          // Phase A + B: text moves up and fades
-          gsap.to(heroContent, {
-            y: -120 * textIntensity,
-            opacity: 0,
-            ease: 'power2.in',
-            scrollTrigger: {
-              trigger: hero,
-              start: 'top top',
-              end: isMobile ? '60% top' : '50% top',
-              scrub: 1,
-            },
-          });
-        }
-
-        // Background orbs respond to scroll
-        bgOrbs.forEach((orb, i) => {
-          gsap.to(orb, {
-            y: (i % 2 === 0 ? 80 : -60) * textIntensity,
-            opacity: 0.3,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: hero,
-              start: 'top top',
-              end: 'bottom top',
-              scrub: 1.5,
-            },
-          });
-        });
-
-        // Scroll indicator fades early
-        if (scrollIndicator) {
-          gsap.to(scrollIndicator, {
-            opacity: 0,
-            ease: 'power2.in',
-            scrollTrigger: {
-              trigger: hero,
-              start: 'top top',
-              end: '15% top',
-              scrub: 1,
-            },
-          });
-        }
-
-        // Individual element parallax for depth
-        if (heroEyebrow) {
-          gsap.to(heroEyebrow, {
-            y: -40 * textIntensity,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: hero,
-              start: 'top top',
-              end: '40% top',
-              scrub: 1,
-            },
-          });
-        }
-
-        if (heroStats) {
-          gsap.to(heroStats, {
-            y: -80 * textIntensity,
-            ease: 'none',
-            scrollTrigger: {
-              trigger: hero,
-              start: 'top top',
-              end: '50% top',
-              scrub: 1,
-            },
-          });
+          gsap.to(
+            hero.querySelectorAll('[data-hero-bg]'),
+            {
+              y: 100,
+              ease: 'none',
+              scrollTrigger: {
+                trigger: hero,
+                start: 'top top',
+                end: 'bottom top',
+                scrub: 1,
+              },
+            }
+          );
         }
 
         return () => {
-          progressTrigger.kill();
+          scrollStore.heroProgress = 0;
         };
       }
     );
 
-    return () => mm.revert();
-  }, [reduced]);
+    return () => {
+      media.revert();
+      scrollStore.heroProgress = 0;
+    };
+  }, []);
 
   return null;
 }

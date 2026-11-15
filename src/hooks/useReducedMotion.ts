@@ -1,18 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
-/**
- * useReducedMotion — React hook that tracks the user's
- * prefers-reduced-motion setting and updates live.
- */
 export function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(false);
+  const [reduced, setReduced] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
 
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setReduced(mq.matches);
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches);
-    mq.addEventListener('change', handler);
-    return () => mq.removeEventListener('change', handler);
+    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    setReduced(media.matches);
+
+    const update = (event: MediaQueryListEvent) => {
+      setReduced(event.matches);
+    };
+
+    media.addEventListener('change', update);
+
+    return () => {
+      media.removeEventListener('change', update);
+    };
   }, []);
 
   return reduced;

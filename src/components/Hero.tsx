@@ -1,115 +1,215 @@
-import { ArrowUpRight, Compass } from 'lucide-react';
+import {
+  ArrowDown,
+  ArrowUpRight,
+  Compass,
+} from 'lucide-react';
+
 import HeroVisual from './HeroVisual';
 import ScrollStorytelling from './animations/ScrollStorytelling';
 import MagneticButton from './animations/MagneticButton';
-import { lenisRef } from '@/lib/gsapSetup';
+import { scrollToSection } from '@/lib/navigation';
 
 export default function Hero() {
-  const scrollTo = (href: string) => {
-    const el = document.querySelector(href);
-    if (el) {
-      // Use Lenis for smooth scroll if available
-      if (lenisRef.current) {
-        lenisRef.current.scrollTo(el as HTMLElement, { offset: 0 });
-      } else {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
-    }
-  };
-
   return (
     <section
       id="home"
-      className="relative min-h-screen w-full overflow-hidden bg-ivory grid-texture noise-texture"
+      className="hero-section relative w-full overflow-hidden bg-ivory noise-texture"
     >
-      {/* Background gradient orbs */}
-      <div data-hero-bg className="pointer-events-none absolute top-1/4 -left-20 w-[500px] h-[500px] rounded-full bg-burgundy/5 blur-3xl" />
-      <div data-hero-bg className="pointer-events-none absolute bottom-0 right-0 w-[600px] h-[400px] rounded-full bg-coral/5 blur-3xl" />
+      <div
+        data-hero-bg
+        className="hero-ambient hero-ambient-one"
+        aria-hidden="true"
+      />
+
+      <div
+        data-hero-bg
+        className="hero-ambient hero-ambient-two"
+        aria-hidden="true"
+      />
 
       <ScrollStorytelling />
 
-      <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 pt-32 pb-20 md:pt-40 md:pb-24">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center min-h-[80vh]">
-          {/* Left: Content */}
-          <div data-hero-content className="lg:col-span-7 xl:col-span-7">
-            {/* Eyebrow */}
-            <div data-hero-eyebrow className="reveal mb-6 inline-flex items-center gap-2.5 rounded-full border border-burgundy/15 bg-ivory/50 px-4 py-2">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full rounded-full bg-coral opacity-75 animate-ping" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-cherry" />
-              </span>
-              <span className="text-xs font-medium tracking-wide text-espresso/60">
-                Dubai, UAE — Digital Experience Studio
+      <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-8 pt-32 pb-16 md:pt-40 md:pb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-4 items-center">
+          <div
+            data-hero-content
+            className="relative z-10 lg:col-span-7"
+          >
+            <div
+              data-hero-enter
+              className="mb-7 inline-flex items-center gap-3 rounded-full border border-burgundy/15 px-4 py-2.5"
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-cherry"
+                aria-hidden="true"
+              />
+
+              <span className="text-[10px] sm:text-xs font-medium tracking-[0.12em] uppercase text-burgundy">
+                Dubai, UAE · Digital Experience Studio
               </span>
             </div>
 
-            {/* Headline */}
-            <h1 data-hero-headline className="font-display text-hero font-bold text-espresso reveal reveal-delay-1">
-              <span className="block">Beyond Digital.</span>
-              <span className="block">
-                Beyond{' '}
-                <span className="text-gradient-warm">Ordinary.</span>
+            <h1 className="hero-heading font-display font-bold text-espresso">
+              <span className="hero-line-mask">
+                <span data-hero-line className="block">
+                  Beyond Digital.
+                </span>
+              </span>
+
+              <span className="hero-line-mask">
+                <span data-hero-line className="block">
+                  Beyond{' '}
+                  <span className="hero-gradient">
+                    Ordinary.
+                  </span>
+                </span>
               </span>
             </h1>
 
-            {/* Supporting text */}
-            <p data-hero-support className="mt-8 max-w-xl text-lg md:text-xl leading-relaxed text-espresso/60 reveal reveal-delay-2">
-              We shape meaningful digital experiences through creativity,
-              innovation, and technology.
+            <p
+              data-hero-enter
+              className="mt-7 max-w-lg text-base sm:text-lg leading-relaxed text-espresso/75"
+            >
+              We shape meaningful digital experiences through
+              creativity, innovation, and technology.
             </p>
 
-            {/* CTAs */}
-            <div data-hero-ctas className="mt-10 flex flex-col sm:flex-row gap-4 reveal reveal-delay-3">
+            <div
+              data-hero-enter
+              className="mt-8 flex flex-col sm:flex-row gap-3"
+            >
               <MagneticButton
-                onClick={() => scrollTo('#about')}
-                strength={0.2}
-                className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-burgundy to-cherry px-7 py-4 text-base font-medium text-ivory shadow-glow-burgundy transition-all duration-300 hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-burgundy"
+                onClick={() => scrollToSection('#about')}
+                strength={0.18}
+                className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-gradient-to-r from-burgundy to-cherry px-6 py-4 text-sm font-medium text-ivory shadow-glow-burgundy focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-burgundy"
               >
                 Explore Our World
-                <ArrowUpRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
               </MagneticButton>
+
               <MagneticButton
-                onClick={() => scrollTo('#services')}
-                strength={0.15}
-                className="group inline-flex items-center justify-center gap-2.5 rounded-full border border-espresso/15 bg-ivory/50 px-7 py-4 text-base font-medium text-espresso transition-all duration-300 hover:border-burgundy hover:text-burgundy hover:bg-ivory focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-burgundy"
+                onClick={() => scrollToSection('#services')}
+                strength={0.12}
+                className="group inline-flex items-center justify-center gap-2.5 rounded-full border border-espresso/20 px-6 py-4 text-sm font-medium text-espresso hover:bg-burgundy/5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-burgundy"
               >
                 Discover Our Services
-                <Compass className="h-5 w-5 transition-transform group-hover:rotate-12" />
+
+                <Compass className="h-4 w-4 transition-transform group-hover:rotate-45" />
               </MagneticButton>
             </div>
 
-            {/* Stats row */}
-            <div data-hero-stats className="mt-16 flex items-center gap-10 reveal reveal-delay-4">
+            <div
+              data-hero-enter
+              className="hero-stats mt-10 md:mt-14 flex flex-wrap items-center gap-6 sm:gap-8"
+            >
               <div>
-                <div className="font-display text-3xl font-bold text-burgundy">06</div>
-                <div className="text-sm text-espresso/50 mt-1">Core Services</div>
+                <div className="font-display text-2xl font-bold text-burgundy">
+                  06
+                </div>
+
+                <div className="mt-1 text-xs text-espresso/70">
+                  Core Services
+                </div>
               </div>
-              <div className="h-12 w-px bg-espresso/10" />
+
+              <div
+                className="h-9 w-px bg-espresso/15"
+                aria-hidden="true"
+              />
+
               <div>
-                <div className="font-display text-3xl font-bold text-cherry">∞</div>
-                <div className="text-sm text-espresso/50 mt-1">Creative Vision</div>
+                <div className="font-display text-2xl font-bold text-cherry">
+                  ∞
+                </div>
+
+                <div className="mt-1 text-xs text-espresso/70">
+                  Creative Vision
+                </div>
               </div>
-              <div className="h-12 w-px bg-espresso/10" />
+
+              <div
+                className="h-9 w-px bg-espresso/15"
+                aria-hidden="true"
+              />
+
               <div>
-                <div className="font-arabic text-2xl font-semibold text-coral">متجرنا</div>
-                <div className="text-sm text-espresso/50 mt-1">Matjrnaa</div>
+                <div
+                  className="font-arabic text-xl font-semibold text-burgundy"
+                  lang="ar"
+                  dir="rtl"
+                >
+                  متجرنا
+                </div>
+
+                <div className="mt-1 text-xs text-espresso/70">
+                  Matjrnaa
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Right: 3D sculpture */}
-          <div className="lg:col-span-5 xl:col-span-5 reveal reveal-delay-2">
-            <div className="relative aspect-square w-full max-w-[500px] mx-auto min-h-[300px] md:min-h-[400px] lg:min-h-[500px]">
-              <HeroVisual />
+          <div
+            data-hero-visual
+            className="lg:col-span-5 relative"
+          >
+            <div
+              data-hero-enter
+              className="hero-art-stage relative mx-auto w-full"
+              role="img"
+              aria-label="Sculptural burgundy and peach ribbons inspired by Matjrnaa"
+            >
+              <div
+                className="hero-orbit hero-orbit-one"
+                aria-hidden="true"
+              />
+
+              <div
+                className="hero-orbit hero-orbit-two"
+                aria-hidden="true"
+              />
+
+              <div className="absolute inset-0">
+                <HeroVisual />
+              </div>
+
+              <span
+                className="hero-art-label"
+                aria-hidden="true"
+              >
+                ART × TECHNOLOGY
+              </span>
+
+              <span
+                className="hero-art-coordinate"
+                aria-hidden="true"
+              >
+                25.2048° N / 55.2708° E
+              </span>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Scroll indicator */}
-      <div data-hero-scroll-indicator className="absolute bottom-8 left-1/2 -translate-x-1/2 hidden md:flex flex-col items-center gap-2 reveal reveal-delay-5">
-        <span className="text-xs tracking-widest uppercase text-espresso/40">Scroll</span>
-        <div className="h-12 w-px bg-gradient-to-b from-burgundy/30 to-transparent animate-shimmer" />
+        <div
+          data-hero-enter
+          className="mt-10 md:mt-14 flex items-center justify-between border-t border-burgundy/15 pt-5"
+        >
+          <span className="text-[10px] sm:text-xs tracking-[0.14em] uppercase text-espresso/65">
+            Strategy. Storytelling. Digital craft.
+          </span>
+
+          <button
+            onClick={() => scrollToSection('#about')}
+            className="group flex items-center gap-2 text-xs text-burgundy"
+            aria-label="Scroll to About Matjrnaa"
+          >
+            <span className="hidden sm:inline">
+              Scroll to explore
+            </span>
+
+            <ArrowDown className="h-4 w-4 transition-transform group-hover:translate-y-1" />
+          </button>
+        </div>
       </div>
     </section>
   );

@@ -20,7 +20,6 @@ import * as THREE from 'three';
 
 import RibbonSculpture from './RibbonSculpture';
 import SceneLighting from './SceneLighting';
-import FloatingAccents from './FloatingAccents';
 import CameraRig from './CameraRig';
 import HeroSceneFallback from './HeroSceneFallback';
 
@@ -72,8 +71,6 @@ function SceneContent({
 
       <RibbonSculpture />
 
-      <FloatingAccents />
-
       <Environment
         resolution={128}
         frames={1}
@@ -89,11 +86,7 @@ function SceneContent({
         <Lightformer
           intensity={2}
           position={[-5, 0, 2]}
-          rotation={[
-            0,
-            Math.PI / 2,
-            0,
-          ]}
+          rotation={[0, Math.PI / 2, 0]}
           scale={[5, 8, 1]}
           color="#ffc29d"
         />
@@ -101,22 +94,18 @@ function SceneContent({
         <Lightformer
           intensity={2}
           position={[5, 2, 1]}
-          rotation={[
-            0,
-            -Math.PI / 2,
-            0,
-          ]}
+          rotation={[0, -Math.PI / 2, 0]}
           scale={[3, 6, 1]}
           color="#df7084"
         />
       </Environment>
 
       <ContactShadows
-        position={[0, -2.2, 0]}
-        opacity={0.15}
-        scale={10}
+        position={[0, -1.5, 0]}
+        opacity={0.09}
+        scale={5}
         blur={3}
-        far={4}
+        far={3}
         color="#85052D"
       />
 
@@ -140,26 +129,21 @@ export default function HeroScene({
   const [lost, setLost] = useState(false);
 
   useEffect(() => {
-    const observer =
-      new IntersectionObserver(
-        ([entry]) => {
-          setVisible(
-            entry.isIntersecting
-          );
-        },
-        {
-          rootMargin: '100px',
-        }
-      );
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setVisible(entry.isIntersecting);
+      },
+      {
+        rootMargin: '100px',
+      }
+    );
 
     if (host.current) {
       observer.observe(host.current);
     }
 
     const update = () => {
-      setPageVisible(
-        !document.hidden
-      );
+      setPageVisible(!document.hidden);
     };
 
     document.addEventListener(
@@ -178,9 +162,7 @@ export default function HeroScene({
   }, []);
 
   if (lost) {
-    return (
-      <ReadyFallback onReady={onReady} />
-    );
+    return <ReadyFallback onReady={onReady} />;
   }
 
   return (
@@ -204,25 +186,18 @@ export default function HeroScene({
         gl={{
           antialias: true,
           alpha: true,
-          powerPreference:
-            'high-performance',
-          toneMapping:
-            THREE.ACESFilmicToneMapping,
+          powerPreference: 'high-performance',
+          toneMapping: THREE.ACESFilmicToneMapping,
           toneMappingExposure: 1.1,
         }}
         fallback={
-          <ReadyFallback
-            onReady={onReady}
-          />
+          <ReadyFallback onReady={onReady} />
         }
         style={{
           background: 'transparent',
         }}
         onCreated={({ gl }) => {
-          gl.setClearColor(
-            0x000000,
-            0
-          );
+          gl.setClearColor(0x000000, 0);
 
           gl.domElement.addEventListener(
             'webglcontextlost',
@@ -236,9 +211,7 @@ export default function HeroScene({
         }}
       >
         <Suspense fallback={null}>
-          <SceneContent
-            onReady={onReady}
-          />
+          <SceneContent onReady={onReady} />
         </Suspense>
       </Canvas>
     </div>

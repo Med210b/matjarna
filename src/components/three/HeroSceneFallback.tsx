@@ -5,48 +5,47 @@ export default function HeroSceneFallback() {
 
   return (
     <div
-      className="relative flex h-full w-full items-center justify-center"
+      className="flex h-full w-full items-center justify-center"
       aria-hidden="true"
     >
       <svg
         viewBox="0 0 480 420"
-        className="h-full w-full max-w-[520px]"
+        className="h-full w-full"
         fill="none"
       >
         <defs>
           <linearGradient
-            id={`${id}-metal`}
-            x1="90"
+            id={`${id}-ceramic`}
+            x1="170"
             y1="100"
-            x2="380"
+            x2="310"
             y2="300"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="#30130f" />
-            <stop offset="0.15" stopColor="#a91442" />
-            <stop offset="0.35" stopColor="#ee8b78" />
-            <stop offset="0.48" stopColor="#fff8f3" />
-            <stop offset="0.57" stopColor="#85052d" />
-            <stop offset="0.85" stopColor="#30130f" />
-            <stop offset="1" stopColor="#df7084" />
-          </linearGradient>
+            <stop stopColor="#d28b96" />
 
-          <linearGradient
-            id={`${id}-peach`}
-            x1="80"
-            y1="250"
-            x2="380"
-            y2="110"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stopColor="#85052d" />
-            <stop offset="0.4" stopColor="#ffc29d" />
-            <stop offset="0.7" stopColor="#fff8f3" />
-            <stop offset="1" stopColor="#df7084" />
+            <stop
+              offset="0.3"
+              stopColor="#ac5369"
+            />
+
+            <stop
+              offset="0.65"
+              stopColor="#92394f"
+            />
+
+            <stop
+              offset="1"
+              stopColor="#532335"
+            />
           </linearGradient>
 
           <radialGradient id={`${id}-shadow`}>
-            <stop stopColor="#85052d" stopOpacity="0.18" />
+            <stop
+              stopColor="#85052d"
+              stopOpacity="0.1"
+            />
+
             <stop
               offset="1"
               stopColor="#85052d"
@@ -56,57 +55,42 @@ export default function HeroSceneFallback() {
         </defs>
 
         <ellipse
-          cx="242"
-          cy="350"
-          rx="155"
-          ry="25"
+          cx="240"
+          cy="315"
+          rx="84"
+          ry="14"
           fill={`url(#${id}-shadow)`}
         />
 
-        <g className="animate-float-slow">
-          <path
-            d="M75 115 C115 65 122 293 160 294 C195 295 200 128 239 126 C278 124 291 295 324 294 C360 293 366 68 408 116"
-            stroke="#30130f"
-            strokeWidth="20"
-            strokeLinecap="round"
-            opacity="0.14"
-            transform="translate(0 5)"
+        <g transform="rotate(-24 240 200)">
+          <ellipse
+            cx="240"
+            cy="200"
+            rx="56"
+            ry="78"
+            stroke="#532335"
+            strokeOpacity="0.14"
+            strokeWidth="29"
+            transform="translate(3 4)"
+          />
+
+          <ellipse
+            cx="240"
+            cy="200"
+            rx="56"
+            ry="78"
+            stroke={`url(#${id}-ceramic)`}
+            strokeWidth="27"
           />
 
           <path
-            d="M75 115 C115 65 122 293 160 294 C195 295 200 128 239 126 C278 124 291 295 324 294 C360 293 366 68 408 116"
-            stroke={`url(#${id}-metal)`}
-            strokeWidth="19"
+            d="M207 141 C186 160 183 186 185 205"
+            stroke="#fff8f3"
+            strokeOpacity="0.27"
+            strokeWidth="5"
             strokeLinecap="round"
-          />
-
-          <path
-            d="M88 133 C133 116 137 257 166 259 C198 262 206 106 242 105 C277 104 295 259 325 258 C356 257 370 112 394 132"
-            stroke={`url(#${id}-peach)`}
-            strokeWidth="10"
-            strokeLinecap="round"
-            opacity="0.8"
           />
         </g>
-
-        <circle
-          cx="365"
-          cy="73"
-          r="20"
-          stroke="#85052d"
-          strokeOpacity="0.5"
-        />
-
-        <path
-          d="M99 284 L112 306"
-          stroke="#a91442"
-          strokeWidth="2"
-        />
-
-        <path
-          d="M381 269 l5 7 -5 7 -5 -7z"
-          fill="#85052d"
-        />
       </svg>
     </div>
   );

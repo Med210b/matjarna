@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from 'react';
@@ -18,7 +19,10 @@ import SmoothScrollProvider from '@/components/animations/SmoothScrollProvider';
 import ScrollProgress from '@/components/animations/ScrollProgress';
 import PageTransitions from '@/components/animations/PageTransitions';
 
-import { ScrollTrigger } from '@/lib/gsapSetup';
+import {
+  ScrollTrigger,
+  lenisRef,
+} from '@/lib/gsapSetup';
 
 import '@/styles/cinematic.css';
 import '@/styles/intro-refinement.css';
@@ -32,46 +36,82 @@ export default function App() {
     )
   );
 
-  const [loading, setLoading] =
-    useState(!bypass);
+  const [loading, setLoading] = useState(!bypass);
+  const [introStarted, setIntroStarted] = useState(bypass);
+  const [fontsReady, setFontsReady] = useState(false);
+  const [visualReady, setVisualReady] = useState(false);
+  const [fallback, setFallback] = useState(false);
 
-  const [introStarted, setIntroStarted] =
-    useState(bypass);
+  const content = useRef<HTMLDivElement>(null);
+  const main = useRef<HTMLElement>(null);
 
-  const [fontsReady, setFontsReady] =
-    useState(false);
+  const resetScroll = useCallback(() => {
+    // Preserve direct links to About, Services, Contact, etc.
+    if (bypass) return;
 
-  const [visualReady, setVisualReady] =
-    useState(false);
+    lenisRef.current?.scrollTo(0, {
+      immediate: true,
+      force: true,
+    });
 
-  const [fallback, setFallback] =
-    useState(false);
+    window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: 'instant',
+    });
 
-  const content =
-    useRef<HTMLDivElement>(null);
+    ScrollTrigger.refresh();
+    ScrollTrigger.update();
 
-  const main =
-    useRef<HTMLElement>(null);
+    // Synchronize scrubbed animations with the new scroll position.
+    ScrollTrigger.getAll().forEach((trigger) => {
+      trigger.getTween()?.progress(1);
+    });
+  }, [bypass]);
+
+  useLayoutEffect(() => {
+    if (bypass) return;
+
+    const previous =
+      window.history.scrollRestoration;
+
+    window.history.scrollRestoration = 'manual';
+
+    resetScroll();
+
+    const frame =
+      requestAnimationFrame(resetScroll);
+
+    return () => {
+      cancelAnimationFrame(frame);
+
+      window.history.scrollRestoration =
+        previous;
+    };
+  }, [bypass, resetScroll]);
 
   const markVisualReady = useCallback(() => {
     setVisualReady(true);
   }, []);
 
   const reveal = useCallback(() => {
+    resetScroll();
     setIntroStarted(true);
-  }, []);
+  }, [resetScroll]);
 
   const complete = useCallback(() => {
     setLoading(false);
   }, []);
 
   const skip = useCallback(() => {
+    resetScroll();
+
     setFallback(true);
     setFontsReady(true);
     setVisualReady(true);
     setIntroStarted(true);
     setLoading(false);
-  }, []);
+  }, [resetScroll]);
 
   useEffect(() => {
     let active = true;
@@ -188,9 +228,7 @@ export default function App() {
           <Footer />
         </div>
 
-        <PageTransitions
-          enabled={!loading}
-        />
+        <PageTransitions enabled={!loading} />
       </div>
 
       {loading && (

@@ -18,6 +18,7 @@ import Preloader from '@/components/Preloder';
 import SmoothScrollProvider from '@/components/animations/SmoothScrollProvider';
 import ScrollProgress from '@/components/animations/ScrollProgress';
 import PageTransitions from '@/components/animations/PageTransitions';
+import MobileMotion from '@/components/animations/MobileMotion';
 
 import {
   ScrollTrigger,
@@ -223,6 +224,7 @@ export default function App() {
         </div>
 
         <PageTransitions enabled={!loading} />
+        <MobileMotion enabled={!loading} />
       </div>
 
       {loading && (

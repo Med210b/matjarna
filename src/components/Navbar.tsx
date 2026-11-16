@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ArrowUpRight, Menu, X } from 'lucide-react';
 
-import { LOGO_URL, NAV_LINKS } from '@/lib/content';
+import { NAV_LINKS } from '@/lib/content';
 import { scrollToSection } from '@/lib/navigation';
+
+const NAVBAR_LOGO_URL =
+  'https://res.cloudinary.com/bfmgkwu3/image/upload/v1794848230/file_000000000a88821193b9c88624006446_khokqq.png';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -85,23 +88,14 @@ export default function Navbar() {
                 event.preventDefault();
                 handleNavClick('#home');
               }}
-              className="flex items-center gap-3 group"
+              className="group inline-flex shrink-0 items-center"
+              aria-label="Matjrnaa — Home"
             >
               <img
-                src={LOGO_URL}
-                alt="Matjrnaa Logo"
-                className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
+                src={NAVBAR_LOGO_URL}
+                alt="Matjrnaa"
+                className="h-12 w-12 object-contain transition-transform duration-300 group-hover:scale-105"
               />
-
-              <div className="flex flex-col leading-none">
-                <span className="font-display text-lg font-semibold tracking-tight text-espresso">
-                  Matjrnaa
-                </span>
-
-                <span className="font-arabic text-[11px] text-burgundy/70 mt-0.5">
-                  متجرنا
-                </span>
-              </div>
             </a>
 
             <div className="hidden lg:flex items-center gap-1">
@@ -151,6 +145,7 @@ export default function Navbar() {
               </a>
 
               <button
+                type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className="lg:hidden flex items-center justify-center h-10 w-10 rounded-xl bg-espresso/5 text-espresso transition-colors hover:bg-burgundy hover:text-ivory"
                 aria-label="Toggle menu"
@@ -226,11 +221,7 @@ export default function Navbar() {
             </a>
 
             <div className="mt-auto pt-8">
-              <span className="font-arabic text-sm text-burgundy/60">
-                متجرنا
-              </span>
-
-              <p className="text-sm text-espresso/50 mt-1">
+              <p className="text-sm text-espresso/50">
                 Dubai, UAE
               </p>
             </div>

@@ -12,6 +12,8 @@ import {
 
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 
+import '@/styles/kinetic-intro.css';
+
 interface PreloaderProps {
   fontsReady: boolean;
   visualReady: boolean;
@@ -30,20 +32,21 @@ export default function Preloader({
   const root = useRef<HTMLDivElement>(null);
   const skipButton = useRef<HTMLButtonElement>(null);
 
-  const [entered, setEntered] = useState(false);
+  const [sequenceDone, setSequenceDone] =
+    useState(false);
 
   const reduced = useReducedMotion();
   const ready = fontsReady && visualReady;
 
   useEffect(() => {
     const html = document.documentElement;
-    const previousOverflow = html.style.overflow;
+    const previous = html.style.overflow;
 
     html.style.overflow = 'hidden';
 
     lenisRef.current?.stop();
 
-    const lockFrame = requestAnimationFrame(() => {
+    const frame = requestAnimationFrame(() => {
       lenisRef.current?.stop();
     });
 
@@ -55,7 +58,7 @@ export default function Preloader({
       event.preventDefault();
     };
 
-    const handleKey = (event: KeyboardEvent) => {
+    const keydown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onSkip();
       }
@@ -92,12 +95,15 @@ export default function Preloader({
       { passive: false }
     );
 
-    window.addEventListener('keydown', handleKey);
+    window.addEventListener(
+      'keydown',
+      keydown
+    );
 
     return () => {
-      cancelAnimationFrame(lockFrame);
+      cancelAnimationFrame(frame);
 
-      html.style.overflow = previousOverflow;
+      html.style.overflow = previous;
 
       lenisRef.current?.start();
 
@@ -113,44 +119,129 @@ export default function Preloader({
 
       window.removeEventListener(
         'keydown',
-        handleKey
+        keydown
       );
     };
   }, [onSkip]);
 
-  // Wordmark entrance.
+  // Wait for the essential visual before starting the sequence.
   useLayoutEffect(() => {
-    if (reduced) {
-      setEntered(true);
-      return;
-    }
-
     const context = gsap.context(() => {
-      gsap.fromTo(
-        '[data-studio-letter]',
-        {
-          yPercent: 115,
+      const words =
+        root.current!.querySelectorAll(
+          '[data-kinetic-word]'
+        );
+
+      if (!ready) {
+        gsap.set(words[3], {
+          opacity: 1,
+          yPercent: 0,
+        });
+
+        return;
+      }
+
+      if (reduced) {
+        gsap.set(words[3], {
+          opacity: 1,
+          yPercent: 0,
+        });
+
+        setSequenceDone(true);
+        return;
+      }
+
+      gsap.set(words, {
+        yPercent: 110,
+        opacity: 0,
+      });
+
+      gsap.to('[data-kinetic-orbit]', {
+        rotation: 360,
+        duration: 9,
+        repeat: -1,
+        ease: 'none',
+      });
+
+      const timeline = gsap.timeline({
+        onComplete: () => {
+          setSequenceDone(true);
         },
+      });
+
+      timeline
+        .fromTo(
+          '[data-kinetic-symbol]',
+          {
+            scale: 0.8,
+            opacity: 0,
+          },
+          {
+            scale: 1,
+            opacity: 1,
+            duration: 0.9,
+            ease: 'power3.out',
+          },
+          0
+        )
+        .to(
+          '[data-kinetic-trace]',
+          {
+            attr: {
+              'stroke-dashoffset': 0,
+            },
+            duration: 3.8,
+            ease: 'power1.inOut',
+          },
+          0
+        );
+
+      [0.1, 1.2, 2.3].forEach(
+        (start, index) => {
+          timeline
+            .to(
+              words[index],
+              {
+                yPercent: 0,
+                opacity: 1,
+                duration: 0.55,
+                ease: 'power3.out',
+              },
+              start
+            )
+            .to(
+              words[index],
+              {
+                yPercent: -110,
+                opacity: 0,
+                duration: 0.3,
+                ease: 'power3.in',
+              },
+              start + 0.9
+            );
+        }
+      );
+
+      timeline.to(
+        words[3],
         {
           yPercent: 0,
-          stagger: 0.025,
-          duration: 0.55,
+          opacity: 1,
+          duration: 0.4,
           ease: 'power3.out',
-          onComplete: () => {
-            setEntered(true);
-          },
-        }
+        },
+        3.4
       );
     }, root);
 
     return () => {
       context.revert();
     };
-  }, [reduced]);
+  }, [reduced, ready]);
 
-  // Blend into the hero while keeping the ribbon in place.
+  // Open from the center and reveal the hero.
   useLayoutEffect(() => {
-    if (!ready || !entered) return;
+    if (!ready || !sequenceDone) return;
 
     if (reduced) {
       onReveal();
@@ -164,35 +255,43 @@ export default function Preloader({
           onComplete,
         })
         .to(
-          '[data-studio-letter]',
+          '[data-kinetic-content]',
           {
-            yPercent: -115,
-            stagger: 0.018,
-            duration: 0.35,
-            ease: 'power3.in',
+            opacity: 0,
+            y: -12,
+            duration: 0.3,
           },
           0
         )
         .to(
-          '[data-studio-detail]',
+          '[data-kinetic-symbol]',
           {
             opacity: 0,
-            y: -8,
-            duration: 0.25,
+            scale: 1.12,
+            duration: 0.35,
           },
           0
         )
         .call(
           onReveal,
           [],
+          0.25
+        )
+        .to(
+          '[data-kinetic-left]',
+          {
+            xPercent: -100,
+            duration: 0.8,
+            ease: 'power4.inOut',
+          },
           0.1
         )
         .to(
-          root.current,
+          '[data-kinetic-right]',
           {
-            opacity: 0,
-            duration: 0.6,
-            ease: 'power2.inOut',
+            xPercent: 100,
+            duration: 0.8,
+            ease: 'power4.inOut',
           },
           0.1
         );
@@ -203,7 +302,7 @@ export default function Preloader({
     };
   }, [
     ready,
-    entered,
+    sequenceDone,
     reduced,
     onReveal,
     onComplete,
@@ -212,72 +311,121 @@ export default function Preloader({
   return (
     <div
       ref={root}
-      className="studio-loader"
+      className="kinetic-intro"
       role="dialog"
       aria-modal="true"
-      aria-label="Welcome to Matjrnaa"
+      aria-label="Matjrnaa — Imagine, Shape, Connect"
     >
       <div
-        className="studio-loader-veil"
-        aria-hidden="true"
+        className="kinetic-panel kinetic-panel-left"
+        data-kinetic-left
       />
 
       <div
-        className="studio-loader-top"
-        data-studio-detail
+        className="kinetic-panel kinetic-panel-right"
+        data-kinetic-right
+      />
+
+      <div
+        className="kinetic-top"
+        data-kinetic-content
       >
         <span>MATJRNAA</span>
         <span>DUBAI / UAE</span>
       </div>
 
-      <div className="studio-loader-copy">
-        <p
-          className="studio-loader-eyebrow"
-          data-studio-detail
+      <div className="kinetic-center">
+        <div
+          className="kinetic-symbol"
+          data-kinetic-symbol
+          aria-hidden="true"
         >
-          Independent digital studio
-        </p>
+          <svg
+            viewBox="0 0 320 320"
+            fill="none"
+          >
+            <circle
+              cx="160"
+              cy="160"
+              r="140"
+              stroke="#85052d"
+              strokeOpacity="0.1"
+            />
+
+            <circle
+              data-kinetic-trace
+              cx="160"
+              cy="160"
+              r="140"
+              pathLength={1}
+              stroke="#85052d"
+              strokeWidth="1.5"
+              strokeDasharray="1"
+              strokeDashoffset="1"
+              transform="rotate(-90 160 160)"
+            />
+          </svg>
+
+          <div
+            className="kinetic-orbit"
+            data-kinetic-orbit
+          >
+            <span />
+          </div>
+
+          <div className="kinetic-orbit-ellipse" />
+        </div>
 
         <div
-          className="studio-loader-wordmark"
-          aria-label="Matjrnaa"
+          className="kinetic-title-mask"
+          data-kinetic-content
+          aria-hidden="true"
         >
-          {'MATJRNAA'.split('').map(
-            (letter, index) => (
-              <span
-                className="studio-loader-mask"
-                key={index}
-                aria-hidden="true"
-              >
-                <span data-studio-letter>
-                  {letter}
-                </span>
-              </span>
-            )
-          )}
+          <span
+            data-kinetic-word
+            className="kinetic-word"
+          >
+            Imagine.
+          </span>
+
+          <span
+            data-kinetic-word
+            className="kinetic-word kinetic-word-outline"
+          >
+            Shape.
+          </span>
+
+          <span
+            data-kinetic-word
+            className="kinetic-word"
+          >
+            Connect.
+          </span>
+
+          <span
+            data-kinetic-word
+            className="kinetic-word kinetic-word-brand"
+          >
+            MATJRNAA
+          </span>
         </div>
 
         <p
-          className="studio-loader-tagline"
-          data-studio-detail
+          className="kinetic-caption"
+          data-kinetic-content
         >
-          Ideas. Crafted into experiences.
+          Ideas in motion. Experiences that matter.
         </p>
       </div>
 
       <div
-        className="studio-loader-bottom"
-        data-studio-detail
+        className="kinetic-bottom"
+        data-kinetic-content
       >
-        <span
-          className="studio-loader-status"
-          role="status"
-        >
-          <i aria-hidden="true" />
-
-          {ready
-            ? 'Welcome to our world'
-            : 'Preparing the experience'}
+        <span role="status">
+          {!ready
+            ? 'Preparing your experience…'
+            : 'Beyond the ordinary.'}
         </span>
 
         <button

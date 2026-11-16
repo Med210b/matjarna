@@ -46,7 +46,6 @@ export default function App() {
   const main = useRef<HTMLElement>(null);
 
   const resetScroll = useCallback(() => {
-    // Preserve direct links to About, Services, Contact, etc.
     if (bypass) return;
 
     lenisRef.current?.scrollTo(0, {
@@ -62,11 +61,6 @@ export default function App() {
 
     ScrollTrigger.refresh();
     ScrollTrigger.update();
-
-    // Synchronize scrubbed animations with the new scroll position.
-    ScrollTrigger.getAll().forEach((trigger) => {
-      trigger.getTween()?.progress(1);
-    });
   }, [bypass]);
 
   useLayoutEffect(() => {
